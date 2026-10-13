@@ -11,7 +11,7 @@ WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY src/ ./src/
 
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir -e ".[ai]"
 
 RUN useradd --create-home --uid 10001 appuser \
     && mkdir -p /app/data \
