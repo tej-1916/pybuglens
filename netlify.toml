@@ -1,0 +1,27 @@
+# Netlify configuration for AI-Powered Bug Detection System Frontend
+
+[build]
+  publish = "src/bug_detector/static"
+
+# Static asset path compatibility
+[[redirects]]
+  from = "/static/*"
+  to = "/:splat"
+  status = 200
+
+# Reverse-proxy API calls to backend Python service
+# Replace YOUR_BACKEND_URL with your actual backend provider URL (e.g., https://bug-detector-api.onrender.com)
+[[redirects]]
+  from = "/api/*"
+  to = "https://YOUR_BACKEND_SERVICE.onrender.com/api/:splat"
+  status = 200
+  force = false
+
+# Security response headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"

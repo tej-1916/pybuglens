@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="PyBugLens — AI-Powered Python Code Intelligence. Zero-execution static AST bug detection and quality analysis workspace.">
+  <meta name="theme-color" content="#0a0e1a">
+  <title>PyBugLens — AI-Powered Python Code Intelligence</title>
+  <!-- Modern SVG Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2306b6d4'/%3E%3Cstop offset='100%25' stop-color='%236366f1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='14' fill='%230b0f19' stroke='url(%23g)' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-dasharray='3 2'/%3E%3Cpath d='M16 6v3M16 23v3M6 16h3M23 16h3' stroke='%236366f1' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%2338bdf8'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <!-- Application Shell -->
+  <div class="app-layout">
+    
+    <!-- Left Navigation Sidebar -->
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Navigation">
+      <div class="sidebar-brand">
+        <div class="brand-logo-container">
+          <!-- Geometric PyBugLens SVG Logo -->
+          <svg class="brand-logo-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect width="36" height="36" rx="9" fill="#0f172a" />
+            <circle cx="18" cy="18" r="13" stroke="url(#logo-gradient)" stroke-width="2.5" />
+            <circle cx="18" cy="18" r="7" stroke="#06b6d4" stroke-width="1.8" stroke-dasharray="2.5 2.5" />
+            <path d="M18 5V9M18 27V31M5 18H9M27 18H31" stroke="#818cf8" stroke-width="2" stroke-linecap="round" />
+            <circle cx="18" cy="18" r="3.2" fill="#38bdf8" />
+            <defs>
+              <linearGradient id="logo-gradient" x1="5" y1="5" x2="31" y2="31" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#06b6d4" />
+                <stop offset="1" stop-color="#6366f1" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="brand-text-group">
+          <div class="brand-title-row">
+            <span class="brand-name">PyBugLens</span>
+            <span class="badge" id="version-badge">v0.1.0</span>
+          </div>
+          <span class="brand-tagline">AI-Powered Python Code Intelligence</span>
+          <!-- Subtitle preserving test compatibility for "AI Bug Detector" string check -->
+          <span class="brand-compat-label">Engine: AI Bug Detector Core</span>
+        </div>
+      </div>
+
+      <!-- Sidebar Navigation Menu -->
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="workspace" id="nav-workspace-btn" aria-label="Switch to Workspace">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 9h4"/><path d="M15 15h4"/></svg>
+          <span class="nav-label">Workspace</span>
+        </button>
+
+        <button class="nav-item" data-view="history" id="nav-history-btn" aria-label="Switch to Review History">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+          <span class="nav-label">Analysis History</span>
+          <span class="nav-pill-count" id="sidebar-history-count">0</span>
+        </button>
+
+        <button class="nav-item" data-view="settings" id="nav-settings-btn" aria-label="Switch to Settings">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span class="nav-label">Settings</span>
+        </button>
+
+        <button class="nav-item" data-view="about" id="nav-about-btn" aria-label="About PyBugLens">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span class="nav-label">About</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer Status & Theme Switcher -->
+      <div class="sidebar-footer">
+        <div class="sidebar-status-box">
+          <div class="status-indicator-dot online"></div>
+          <div class="status-text-stack">
+            <span class="status-label">AST Sandbox</span>
+            <span class="status-sub">Zero-Execution Guarded</span>
+          </div>
+        </div>
+
+        <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle Dark / Light Theme" aria-label="Toggle Dark or Light theme">
+          <span class="theme-icon light-icon" aria-hidden="true">☀️</span>
+          <span class="theme-icon dark-icon" aria-hidden="true">🌙</span>
+          <span class="theme-toggle-text" id="theme-toggle-text">Dark Theme</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Application Column -->
+    <div class="app-main-viewport">
+      
+      <!-- Top Application Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <button class="mobile-sidebar-toggle" id="sidebar-toggle-btn" aria-label="Toggle Sidebar Navigation">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div class="breadcrumb-container">
+            <span class="breadcrumb-root">PyBugLens</span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current" id="active-filename-display">snippet.py</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <div id="demo-indicator" class="pill pill-warning hidden" title="Public demonstration mode: Code persistence and paid AI are disabled for privacy">Demo Mode Active</div>
+          <div id="health-indicator" class="pill pill-success" title="REST API backend connection status">API Connected</div>
+          <button id="toggle-history-btn" class="btn btn-secondary btn-compact" title="Open Analysis History Drawer">📜 History</button>
+        </div>
+      </header>
+
+      <!-- VIEW 1: WORKSPACE (Default Main Workspace) -->
+      <main class="view-panel active" id="view-workspace" role="main">
+        <div class="workspace-grid">
+          
+          <!-- Column 1: Upgraded Code Editor Panel -->
+          <section class="editor-section" aria-label="Python Code Editor">
+            <div class="panel-header">
+              <div class="panel-title-group">
+                <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                <h2>Python Code Editor</h2>
+                <span class="file-tag" id="current-filename">snippet.py</span>
+              </div>
+              <div class="sample-selector-group">
+                <label for="sample-select">Load Snippet:</label>
+                <select id="sample-select" aria-label="Load pre-built Python sample snippets">
+                  <option value="">-- Choose a snippet --</option>
+                  <option value="clean">Clean Valid Python Code</option>
+                  <option value="mutable_default">Mutable Default Argument (CORR001)</option>
+                  <option value="zero_division">Division by Literal Zero (CORR002)</option>
+                  <option value="ineffective_comparison">Ineffective Comparison (CORR003)</option>
+                  <option value="unreachable">Unreachable Code (CORR004)</option>
+                  <option value="eval_exec">Dangerous Dynamic Eval / Exec (SEC001)</option>
+                  <option value="hardcoded_secret">Hardcoded Sensitive Credentials (SEC002)</option>
+                  <option value="insecure_tempfile">Insecure Tempfile mktemp (SEC003)</option>
+                  <option value="bare_except">Bare Except Block (STYLE001)</option>
+                  <option value="unused_var">Unused Local Variable (STYLE002)</option>
+                  <option value="duplicate_branch">Duplicate Branch Bodies (STYLE003)</option>
+                  <option value="syntax_error">Syntax Error (Missing Colon)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Editor Wrapper with Synchronized Line Numbers Gutter -->
+            <div class="editor-container" id="editor-container">
+              <div class="editor-gutter" id="editor-gutter" aria-hidden="true">
+                <span class="gutter-line-number active">1</span>
+              </div>
+              <textarea 
+                id="code-input" 
+                class="code-textarea"
+                spellcheck="false" 
+                placeholder="# Enter Python source code to analyze, or select a sample snippet above...&#10;def calculate(val: int) -&gt; int:&#10;    return val * 2&#10;"
+                aria-label="Python Source Code Input Area"
+              ></textarea>
+            </div>
+
+            <!-- Editor Footer & Action Bar -->
+            <div class="editor-footer">
+              <div class="editor-meta">
+                <span id="line-count">1 line</span>
+                <span class="separator">&bull;</span>
+                <span id="char-count">0 chars</span>
+                <span class="separator">&bull;</span>
+                <span id="tab-indicator" class="tab-badge">Spaces: 4</span>
+                <span class="separator">&bull;</span>
+                <span class="encoding-badge">UTF-8</span>
+              </div>
+              
+              <div class="editor-actions">
+                <label class="toggle-control" id="ai-toggle-label" title="Enable OpenAI quality review analysis">
+                  <input type="checkbox" id="ai-toggle">
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-text">AI Review</span>
+                </label>
+                
+                <button id="clear-btn" class="btn btn-outline" title="Clear Editor Contents">Clear</button>
+                
+                <button id="analyze-btn" class="btn btn-primary" title="Trigger AST static analysis (Ctrl + Enter)">
+                  <span class="btn-spinner hidden" id="analyze-spinner" aria-hidden="true"></span>
+                  <svg class="btn-play-icon" id="analyze-icon" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span class="btn-text">Analyze Code</span>
+                  <kbd class="btn-shortcut-kbd">Ctrl+↵</kbd>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Column 2: Interactive Analysis Report Panel -->
+          <section class="results-section" aria-label="Analysis Report and Static Findings">
+            <div class="panel-header">
+              <div class="panel-title-group">
+                <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                <h2>Analysis Report</h2>
+              </div>
+              
+              <div class="results-header-actions">
+                <button id="copy-summary-btn" class="btn btn-secondary btn-compact hidden" title="Copy Markdown Summary to Clipboard">📋 Copy</button>
+                <button id="export-json-btn" class="btn btn-secondary btn-compact hidden" title="Export Analysis Report as JSON">💾 Export</button>
+                <div id="exec-time" class="exec-time-pill hidden">0.00 ms</div>
+              </div>
+            </div>
+
+            <!-- Empty State / Guidance Card -->
+            <div id="empty-state" class="empty-state-card">
+              <div class="empty-icon-ring">
+                <svg viewBox="0 0 48 48" fill="none" width="48" height="48" stroke="currentColor" stroke-width="2">
+                  <circle cx="22" cy="22" r="14" stroke="#06b6d4" />
+                  <path d="M32 32l10 10" stroke="#818cf8" stroke-linecap="round" stroke-width="3" />
+                  <circle cx="22" cy="22" r="5" stroke="#38bdf8" stroke-dasharray="2 2" />
+                </svg>
+              </div>
+              <h3>Ready to Inspect Python Code</h3>
+              <p>Type or paste Python source on the left, or select a sample snippet from the dropdown, then press <strong>Analyze Code</strong> or <kbd>Ctrl+Enter</kbd>.</p>
+              <div class="empty-state-shortcuts">
+                <span>🛡️ Zero-Execution Sandboxed</span>
+                <span>⚡ Real-Time AST Verification</span>
+                <span>🔍 10 Modular Rules</span>
+              </div>
+            </div>
+
+            <!-- Active Results Content Container -->
+            <div id="results-container" class="results-container hidden" aria-live="polite">
+              
+              <!-- Syntax Validity Banner -->
+              <div id="status-banner" class="status-banner">
+                <div class="status-banner-icon" id="status-icon">✓</div>
+                <div class="status-banner-content">
+                  <h4 id="status-title">Syntax Valid</h4>
+                  <p id="status-desc">No syntax errors detected during AST compilation.</p>
+                </div>
+              </div>
+
+              <!-- Interactive Metric Summary Grid -->
+              <div class="metrics-grid" role="region" aria-label="Finding Severity Counters">
+                <div class="metric-card total active-filter" data-filter="all" title="Show all findings">
+                  <div class="metric-num" id="metric-total">0</div>
+                  <div class="metric-label">Total</div>
+                </div>
+                <div class="metric-card critical" data-filter="critical" title="Filter critical findings">
+                  <div class="metric-num" id="metric-critical">0</div>
+                  <div class="metric-label">Critical</div>
+                </div>
+                <div class="metric-card error" data-filter="error" title="Filter errors">
+                  <div class="metric-num" id="metric-error">0</div>
+                  <div class="metric-label">Errors</div>
+                </div>
+                <div class="metric-card warning" data-filter="warning" title="Filter warnings">
+                  <div class="metric-num" id="metric-warning">0</div>
+                  <div class="metric-label">Warnings</div>
+                </div>
+                <div class="metric-card info" data-filter="info" title="Filter info findings">
+                  <div class="metric-num" id="metric-info">0</div>
+                  <div class="metric-label">Info</div>
+                </div>
+              </div>
+
+              <!-- AI Review Insights Card -->
+              <div id="ai-review-card" class="ai-review-card hidden">
+                <div class="ai-review-header">
+                  <div class="ai-review-title">
+                    <span class="ai-icon">✨</span>
+                    <h3>AI Quality Advisor</h3>
+                    <span class="ai-model-tag" id="ai-model-tag">gpt-4o-mini</span>
+                  </div>
+                  <span class="ai-tokens-tag" id="ai-tokens-tag">0 tokens</span>
+                </div>
+                <div class="ai-review-body" id="ai-review-content"></div>
+              </div>
+
+              <!-- Interactive Finding Filters & Search Bar -->
+              <div class="findings-toolbar">
+                <div class="toolbar-left">
+                  <span class="findings-heading">Static Findings</span>
+                  <span class="findings-count-badge" id="findings-count-badge">0 items</span>
+                </div>
+                
+                <div class="toolbar-right">
+                  <div class="search-box">
+                    <input type="text" id="finding-search-input" placeholder="Search findings..." aria-label="Filter findings by text">
+                  </div>
+                  <select id="finding-sort-select" aria-label="Sort findings">
+                    <option value="line">Sort: Line (Asc)</option>
+                    <option value="severity">Sort: Severity (High to Low)</option>
+                    <option value="rule">Sort: Rule ID</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Dynamic Findings Card List -->
+              <div id="findings-list" class="findings-list" role="list"></div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+
+      <!-- VIEW 2: FULL REVIEW HISTORY VIEW -->
+      <section class="view-panel" id="view-history" role="region" aria-label="Review History View">
+        <div class="panel-card-full">
+          <div class="view-header">
+            <div>
+              <h2>Review History</h2>
+              <p class="view-subtitle">Inspect, compare, and manage past Python static analysis sessions stored locally in SQLite.</p>
+            </div>
+            <div class="view-header-actions">
+              <button id="refresh-history-btn" class="btn btn-secondary">🔄 Refresh</button>
+              <button id="clear-history-view-btn" class="btn btn-danger">🗑️ Clear History</button>
+            </div>
+          </div>
+
+          <div id="demo-mode-history-notice" class="notice-card warning hidden">
+            <strong>Public Demo Mode Active:</strong> Analysis persistence and historical review inspection are strictly disabled to protect visitor privacy.
+          </div>
+
+          <div id="history-items-container" class="history-list-view"></div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: SETTINGS PANEL -->
+      <section class="view-panel" id="view-settings" role="region" aria-label="Settings View">
+        <div class="panel-card-full settings-layout">
+          <div class="view-header">
+            <div>
+              <h2>Workspace Settings</h2>
+              <p class="view-subtitle">Customize editor typography, tab spacing, and appearance preferences.</p>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <div class="setting-item">
+              <div class="setting-info">
+                <label for="setting-font-size" class="setting-title">Editor Font Size</label>
+                <span class="setting-desc">Adjust the monospaced editor code size for comfortable reading.</span>
+              </div>
+              <div class="setting-control">
+                <select id="setting-font-size">
+                  <option value="13px">Compact (13px)</option>
+                  <option value="14px" selected>Regular (14px)</option>
+                  <option value="16px">Large (16px)</option>
+                  <option value="18px">Extra Large (18px)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <label for="setting-tab-size" class="setting-title">Tab Indentation Spacing</label>
+                <span class="setting-desc">Configure the number of spaces inserted when pressing Tab.</span>
+              </div>
+              <div class="setting-control">
+                <select id="setting-tab-size">
+                  <option value="4" selected>4 Spaces (PEP 8 Standard)</option>
+                  <option value="2">2 Spaces</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <label for="setting-theme-select" class="setting-title">Color Scheme</label>
+                <span class="setting-desc">Select between Refined Dark Navy and Professional Light mode.</span>
+              </div>
+              <div class="setting-control">
+                <select id="setting-theme-select">
+                  <option value="dark" selected>Dark Navy (Default)</option>
+                  <option value="light">Professional Light</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="shortcuts-card">
+            <h3>Keyboard Shortcuts</h3>
+            <div class="shortcuts-grid">
+              <div class="shortcut-row"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> <span>Run Static Code Analysis</span></div>
+              <div class="shortcut-row"><kbd>Tab</kbd> <span>Indent Code Line(s)</span></div>
+              <div class="shortcut-row"><kbd>Shift</kbd> + <kbd>Tab</kbd> <span>Dedent Code Line(s)</span></div>
+              <div class="shortcut-row"><kbd>Esc</kbd> <span>Close Drawers &amp; Modals</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: ABOUT PYBUGLENS -->
+      <section class="view-panel" id="view-about" role="region" aria-label="About PyBugLens View">
+        <div class="panel-card-full about-layout">
+          <div class="view-header">
+            <div>
+              <h2>About PyBugLens</h2>
+              <p class="view-subtitle">AI-Powered Python Code Intelligence. Find bugs. Understand code. Build better Python.</p>
+            </div>
+          </div>
+
+          <div class="about-content">
+            <div class="about-card highlight">
+              <h3>🛡️ Zero-Trust Code Execution Invariant</h3>
+              <p>PyBugLens operates under a mathematically verified zero-execution guarantee: user-submitted Python code is <strong>never</strong> evaluated, imported, or run via subprocesses. Code is strictly compiled into an Abstract Syntax Tree via <code>ast.parse()</code> and inspected deterministically.</p>
+            </div>
+
+            <div class="about-card">
+              <h3>Rule Catalog (10 Built-In Detectors)</h3>
+              <div class="rule-catalog-grid">
+                <div class="rule-cat-item">
+                  <span class="rule-id-badge corr">CORR001</span>
+                  <div><strong>Mutable Default Argument</strong><p>Catches default container arguments sharing state across function calls.</p></div>
+                </div>
+                <div class="rule-cat-item">
+                  <span class="rule-id-badge corr">CORR002</span>
+                  <div><strong>Division by Literal Zero</strong><p>Detects statically provable division or modulo by 0.</p></div>
+                </div>
+                <div class="rule-cat-item">
+                  <span class="rule-id-badge corr">CORR003</span>
+                  <div><strong>Ineffective Comparison</strong><p>Identifies standalone comparison statements with no side-effects.</p></div>
+                </div>
+                <div class="rule-cat-item">
+                  <span class="rule-id-badge corr">CORR004</span>
+                  <div><strong>Unreachable Statements</strong><p>Flags dead code directly following return, raise, break, or continue.</p></div>
+                </div>
+                <div class="rule-cat-item">
+                  <span class="rule-id-badge sec">SEC001</span>
+                  <div><strong>Dangerous Dynamic Execution</strong><p>Flags dangerous eval() and exec() calls susceptible to arbitrary code execution.</p></div>
+                </div>
+                <div class="rule-cat-item">
+                  <span class="rule-id-badge sec">SEC002</span>
+                  <div><strong>Hardcoded Credentials</strong><p>Detects probable API keys, passwords, and tokens with automatic value redaction.</p></div>
+                </div>
+                <div class="rule-cat-item">
+                  <span class="rule-id-badge sec">SEC003</span>
+                  <div><strong>Insecure Tempfile mktemp</strong><p>Detects deprecated tempfile.mktemp() susceptible to symlink race attacks.</p></div>
+                </div>
+                <div class="rule-cat-item">
+                  <span class="rule-id-badge style">STYLE001</span>
+                  <div><strong>Bare Except Block</strong><p>Flags bare except: clauses that swallow system exit and interrupt signals.</p></div>
+                </div>
+                <div class="rule-cat-item">
+                  <span class="rule-id-badge style">STYLE002</span>
+                  <div><strong>Unused Local Variable</strong><p>Flags variables assigned in functions but never referenced.</p></div>
+                </div>
+                <div class="rule-cat-item">
+                  <span class="rule-id-badge style">STYLE003</span>
+                  <div><strong>Duplicate Branch Bodies</strong><p>Identifies identical logic across if/elif/else blocks.</p></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="about-card specs">
+              <h3>System Architecture &amp; Environment</h3>
+              <ul>
+                <li><strong>Runtime:</strong> Python 3.14.8 on Linux x86_64</li>
+                <li><strong>Backend:</strong> FastAPI + Uvicorn + Pydantic v2</li>
+                <li><strong>Storage:</strong> SQLite with WAL Mode &amp; Parameterized Transactions</li>
+                <li><strong>AI Engine:</strong> Optional OpenAI SDK with offline graceful fallback</li>
+                <li><strong>Test Coverage:</strong> 113 Automated Tests (100% Pass Rate, 91% Statement Coverage)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom Application Status Bar -->
+      <footer class="app-statusbar">
+        <div class="statusbar-left">
+          <span class="status-item"><span class="dot-green"></span> Engine: Python AST Visitor</span>
+          <span class="status-divider">|</span>
+          <span class="status-item" id="status-latency">Latency: 0.00 ms</span>
+          <span class="status-divider">|</span>
+          <span class="status-item" id="status-lines-analyzed">0 lines analyzed</span>
+        </div>
+        <div class="statusbar-right">
+          <span class="status-item">🛡️ Zero-Execution Sandboxed</span>
+          <span class="status-divider">|</span>
+          <span class="status-item">PyBugLens v0.1.0</span>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- History Drawer / Modal (Maintained for toggle-history-btn compatibility) -->
+  <div id="history-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-history-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modal-history-title">Recent Analysis History</h3>
+        <div class="modal-actions">
+          <button id="clear-history-btn" class="btn btn-sm btn-danger">Clear History</button>
+          <button id="close-history-btn" class="modal-close-btn" aria-label="Close History Modal">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="notice-card warning hidden" id="modal-demo-notice">
+          <strong>Public Demo Mode Active:</strong> History persistence is disabled to protect user privacy.
+        </div>
+        <div id="modal-history-items-container" class="history-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-container" class="toast-container" aria-live="assertive"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

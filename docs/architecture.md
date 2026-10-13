@@ -116,16 +116,43 @@ ai-bug-detector-v2/
   - `AnalysisEngine` supports optional `save=True/False` execution.
   - Supports zero-persistence public demo mode where visitor code is never saved to disk.
 
-### Phase 4: AI Integration, Web Dashboard, and CLI
-- **OpenAI Service**: Resilient client with timeout handling, exponential backoff, prompt guardrails, and graceful fallbacks when offline or unconfigured.
-- **FastAPI Endpoints**: `GET /api/health`, `POST /api/analyze`, `GET /api/history`, `GET /api/history/{id}`, `DELETE /api/history/{id}`.
-- **Web Interface**: Clean, responsive single-page dashboard featuring code editor, line numbers, syntax error alerts, expandable bug cards with severity badges, and history panel.
-- **CLI Utility**: `bug-detector analyze <path>` with JSON and human-readable terminal output.
+### Phase 4: AI Integration, Web Dashboard, and CLI (COMPLETED)
+- **AI Review Component (`AIReviewer`)**:
+  - Independent, defensive OpenAI chat completion integration (`src/bug_detector/ai/reviewer.py`).
+  - Graceful degradation when `OPENAI_API_KEY` is omitted or unconfigured.
+  - Strict block and isolation when `DEMO_MODE=true` (never makes paid external API calls).
+  - Handles `AuthenticationError`, `RateLimitError`, `APITimeoutError`, and `APIConnectionError` without crashing or throwing unhandled exceptions.
+  - Strict security policy: never logs or exposes API keys or user source code.
+- **FastAPI Backend Application (`src/bug_detector/api/`)**:
+  - Endpoints:
+    - `GET /api/health`: Returns service health, version, demo mode status, and boolean AI availability (zero secret exposure).
+    - `POST /api/analyze`: Zero-execution AST analysis pipeline with size/line validation and per-IP rate limiting.
+    - `GET /api/history`: Paginated history summaries (blocked with 403 in `DEMO_MODE`).
+    - `GET /api/history/{id}`: Detailed historical review record (blocked with 403 in `DEMO_MODE`).
+    - `DELETE /api/history/{id}`: Delete specific historical review (blocked with 403 in `DEMO_MODE`).
+    - `POST /api/history/clear`: Purge all historical reviews (blocked with 403 in `DEMO_MODE`).
+  - Thread-safe sliding-window `RateLimiter` protecting endpoints against automated abuse.
+  - Strict CORS policy with configurable allowed origins and non-wildcard credentials.
+- **Web Dashboard (`src/bug_detector/static/`)**:
+  - Modern, responsive single-page application served directly from FastAPI at root `/`.
+  - Self-contained HTML/CSS/JS without external CDN dependencies.
+  - Code editor with live character/line counters and preloaded bug snippet library.
+  - Status banner, real-time metrics cards, categorized findings with severity badges and suggested fixes.
+  - Optional AI Quality Advisor panel displaying structured review insights.
+  - Review history drawer with inspection and clearing controls (auto-disabled in demo mode).
+  - Strict DOM rendering using `textContent` and `document.createElement` eliminating Cross-Site Scripting (XSS).
+- **Command-Line Interface (`bug-detector`)**:
+  - Click-powered CLI entrypoint installed under `bug-detector`.
+  - Commands:
+    - `bug-detector analyze <path> [--json] [--ai] [--no-save]`: Analyzes local Python files, formatted color output or JSON. Exit codes: 0 = clean, 1 = bugs detected, 2 = syntax error or invalid input.
+    - `bug-detector history [--limit N]`: Lists past reviews.
+    - `bug-detector view <review_id> [--json]`: Displays full review details.
+    - `bug-detector server [--host H] [--port P] [--reload]`: Starts FastAPI uvicorn web server.
 
 ### Phase 5: Verification, Hardening & Deployment
-- Comprehensive test coverage across all layers.
-- Non-execution verification tests (confirming code is never executed).
+- Production deployment packaging and verification.
 - Netlify static frontend configuration + cloud backend configuration (Render/Fly.io/Docker).
+- Production documentation and operational runbooks.
 
 ---
 

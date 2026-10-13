@@ -3,9 +3,11 @@
 import time
 from typing import Optional
 
+from bug_detector.ai.reviewer import AIReviewer
 from bug_detector.analyzers.ast_scanner import ASTScanner
 from bug_detector.core.config import Settings, get_settings
 from bug_detector.core.models import (
+    AIReviewResult,
     AnalysisRequest,
     AnalysisResult,
     AnalysisSummary,
@@ -23,11 +25,13 @@ class AnalysisEngine:
         sanitizer: Optional[CodeSanitizer] = None,
         repository: Optional[ReviewRepository] = None,
         settings: Optional[Settings] = None,
+        ai_reviewer: Optional[AIReviewer] = None,
     ) -> None:
         self.scanner = scanner or ASTScanner()
         self.sanitizer = sanitizer or CodeSanitizer()
         self.repository = repository
         self.settings = settings or get_settings()
+        self.ai_reviewer = ai_reviewer or AIReviewer(settings=self.settings)
 
     def analyze(
         self, request: AnalysisRequest, save: bool = True
@@ -59,9 +63,19 @@ class AnalysisEngine:
         # Step 3: Compute summary counts
         summary = AnalysisSummary.from_findings(findings)
 
+        # Step 4: Optional AI Review
+        ai_review_result: Optional[AIReviewResult] = None
+        if request.enable_ai:
+            ai_review_result = self.ai_reviewer.review(
+                source_code=sanitized.code,
+                findings=findings,
+                filename=request.filename,
+                syntax_result=syntax_res,
+            )
+
         duration_ms = (time.perf_counter() - start_time) * 1000.0
 
-        # Step 4: Construct comprehensive result
+        # Step 5: Construct comprehensive result
         result = AnalysisResult(
             filename=request.filename,
             source_code=sanitized.code,
@@ -71,7 +85,7 @@ class AnalysisEngine:
             syntax=syntax_res,
             findings=findings,
             summary=summary,
-            ai_review=None,
+            ai_review=ai_review_result,
             execution_duration_ms=round(duration_ms, 2),
         )
 
